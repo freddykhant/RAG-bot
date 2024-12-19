@@ -24,6 +24,7 @@ def retrieve(state):
   documents = retriever.invoke(question)
   return{"documents": documents}
 
+
 def generate(state):
   print("Generating answers...")
   question = state["question"]
@@ -34,6 +35,7 @@ def generate(state):
   rag_prompt_formatted = rag_prompt.format(context=docs_txt, question=question)
   generation = llm.invoke([HumanMessage(content=rag_prompt_formatted)])
   return {"generation": generation, "loop_step" : loop_step + 1}
+
 
 def grade_documents(state):
   print("Checking document relevance to the question...")
@@ -61,7 +63,8 @@ def grade_documents(state):
       web_search = "Yes"
       continue
     return {"documents": filtered_docs, "web_search": web_search}
-  
+
+
 def web_search(state):
   print("Running web search...")
   question = state["question"]
@@ -74,7 +77,9 @@ def web_search(state):
   documents.append(web_results)
   return {"documents": documents}
 
-### Edges
+
+### Edges ###
+
 def route_question(state):
   print("Route question")
   route_question = llm_json_mode.invoke(
@@ -88,7 +93,8 @@ def route_question(state):
   elif source == "vectorstore":
     print("Route question to RAG")
     return "vectorstore"
-  
+
+
 def decide_to_generate(state):
   print("Assess graded documents")
   question = state["question"]
@@ -101,3 +107,10 @@ def decide_to_generate(state):
     print("Decision: Generate")
     return "generate"
   
+  
+def grade_generation(state):
+  print("Check hallucinations")
+  question = state["question"]
+  documents = state["documents"]
+  generation = state["generation"]
+  max_retries = state.get("max_retries", 3) # default to 3 if not provided
