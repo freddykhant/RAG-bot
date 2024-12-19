@@ -89,3 +89,15 @@ def route_question(state):
     print("Route question to RAG")
     return "vectorstore"
   
+def decide_to_generate(state):
+  print("Assess graded documents")
+  question = state["question"]
+  web_search = state["web_search"]
+  filtered_documents = state["documents"]
+
+  if web_search == "Yes":
+    print("Not all documents are relevant to question, include Web Search")
+  else:
+    print("Decision: Generate")
+    return "generate"
+  
