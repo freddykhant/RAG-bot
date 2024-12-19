@@ -3,7 +3,7 @@ from typing_extensions import TypedDict
 from typing import List, Annotated
 from langchain.schema import Document
 from langgraph.graph import END
-from RAG import retriever, format_docs, rag_prompt, llm, doc_grader_prompt, doc_grader_instructions, llm_json_mode, web_search_tool
+from RAG import retriever, format_docs, rag_prompt, llm, doc_grader_prompt, doc_grader_instructions, llm_json_mode, web_search_tool, router_instructions
 from langchain_core.messages import HumanMessage, SystemMessage
 import json
 
@@ -75,3 +75,17 @@ def web_search(state):
   return {"documents": documents}
 
 ### Edges
+def route_question(state):
+  print("Route question")
+  route_question = llm_json_mode.invoke(
+    [SystemMessage(content=router_instructions)]
+    + [HumanMessage(content=state["question"])]
+  )
+  source = json.loads(route_question.content)["datasource"]
+  if source == "websearch":
+    print("Routing to web search")
+    return "websearch"
+  elif source == "vectorstore":
+    print("Route question to RAG")
+    return "vectorstore"
+  
