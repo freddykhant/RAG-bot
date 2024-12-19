@@ -3,7 +3,7 @@ from typing_extensions import TypedDict
 from typing import List, Annotated
 from langchain.schema import Document
 from langgraph.graph import END
-from RAG import retriever, format_docs, rag_prompt, llm, doc_grader_prompt, doc_grader_instructions, llm_json_mode, web_search_tool, router_instructions
+from RAG import retriever, format_docs, rag_prompt, llm, doc_grader_prompt, doc_grader_instructions, llm_json_mode, web_search_tool, router_instructions, hallucination_grader_prompt, hallucination_grader_instructions, answer_grader_prompt, answer_grader_instructions
 from langchain_core.messages import HumanMessage, SystemMessage
 import json
 
@@ -107,10 +107,50 @@ def decide_to_generate(state):
     print("Decision: Generate")
     return "generate"
   
-  
+
 def grade_generation(state):
   print("Check hallucinations")
   question = state["question"]
   documents = state["documents"]
   generation = state["generation"]
   max_retries = state.get("max_retries", 3) # default to 3 if not provided
+
+  # Get hallucination grade 
+  hallucination_grader_prompt_formatted = hallucination_grader_prompt.format(
+    documents=format_docs(documents), generation=generation.content
+  )
+  result = llm_json_mode.invoke(
+    [SystemMessage(content=hallucination_grader_instructions)]
+    + [HumanMessage(content=hallucination_grader_prompt_formatted)]
+  )
+  grade = json.loads(result.content)["binary_score"]
+
+  # Check hallucination
+  if grade == "yes": 
+    print("Decision: Generation is grounded in documents")
+    # Check question-answering
+    print("Grade generation vs question")
+    answer_grader_prompt_formatted = answer_grader_prompt.format(
+      question=question, generation=generation.content
+      )
+    result = llm_json_mode.invoke(
+      [SystemMessage(content=answer_grader_instructions)]
+      + [HumanMessage(content=answer_grader_prompt_formatted)])
+    
+    grade = json.loads(result.content)["binary_score"]  
+
+    if grade == "yes":
+      print("Decision: Generation addresses question")
+      return "useful"
+    elif state["loop_step"] <= max_retries:
+      print("Decision: Generation does not address question")
+      return "not useful"
+    else:
+      print("Decision: Max retries reached")
+      return "max_retries"  
+  elif state["loop_step"] <= max_retries:
+    print("Decision: Hallucination")
+    return "not supported"
+  else:
+    print("Decision: Max retries reached")
+    return "max_retries"  
