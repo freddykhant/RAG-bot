@@ -3,7 +3,7 @@ from typing_extensions import TypedDict
 from typing import List, Annotated
 from langchain.schema import Document
 from langgraph.graph import END
-from RAG import retriever, format_docs, rag_prompt, llm, doc_grader_prompt, doc_grader_instructions, llm_json_mode
+from RAG import retriever, format_docs, rag_prompt, llm, doc_grader_prompt, doc_grader_instructions, llm_json_mode, web_search_tool
 from langchain_core.messages import HumanMessage, SystemMessage
 import json
 
@@ -61,3 +61,17 @@ def grade_documents(state):
       web_search = "Yes"
       continue
     return {"documents": filtered_docs, "web_search": web_search}
+  
+def web_search(state):
+  print("Running web search...")
+  question = state["question"]
+  documents = state.get("documents", [])
+
+  # Web search
+  docs = web_search_tool.invoke({"query": question})
+  web_results = "\n".join([d["content"] for d in docs])
+  web_results = Document(page_content=web_results)
+  documents.append(web_results)
+  return {"documents": documents}
+
+### Edges

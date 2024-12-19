@@ -2,7 +2,7 @@ from langchain_ollama import ChatOllama
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_community.vectorstores import SKLearnVectorStore
-#from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_nomic.embeddings import NomicEmbeddings
 from langchain_core.messages import HumanMessage, SystemMessage
 import os
@@ -235,3 +235,7 @@ result= llm_json_mode.invoke(
    + [HumanMessage(content=answer_grader_prompt_formatted)]
 )
 json.loads(result.content)
+
+
+### Web Search Tool
+web_search_tool = TavilySearchResults(k=3)
