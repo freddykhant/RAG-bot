@@ -103,7 +103,7 @@ If the document contains keyword(s) or semantic meaning related to the question,
 # Grader prompt
 doc_grader_prompt = """Here is the retrieved document: \n\n {document} \n\n Here is the user question: \n\n {question}. 
 
-This carefully and objectively assess whether the document contains at least some information that is relevant to the question.
+Please carefully and objectively assess whether the document contains at least some information that is relevant to the question.
 
 Return JSON with single key, binary_score, that is 'yes' or 'no' score to indicate whether the document contains at least some information that is relevant to the question."""
 
@@ -135,7 +135,7 @@ Now, review the user question:
 
 {question}
 
-Provide an answer to this questions using only the above context. 
+Provide an answer to these questions using only the above context. 
 
 Use three sentences maximum and keep the answer concise.
 

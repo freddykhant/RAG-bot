@@ -3,8 +3,9 @@ from typing_extensions import TypedDict
 from typing import List, Annotated
 from langchain.schema import Document
 from langgraph.graph import END
-from RAG import retriever, format_docs, rag_prompt, llm
+from RAG import retriever, format_docs, rag_prompt, llm, doc_grader_prompt, doc_grader_instructions, llm_json_mode
 from langchain_core.messages import HumanMessage, SystemMessage
+import json
 
 class GraphState(TypedDict):
   question: str # user question
@@ -33,3 +34,30 @@ def generate(state):
   rag_prompt_formatted = rag_prompt.format(context=docs_txt, question=question)
   generation = llm.invoke([HumanMessage(content=rag_prompt_formatted)])
   return {"generation": generation, "loop_step" : loop_step + 1}
+
+def grade_documents(state):
+  print("Checking document relevance to the question...")
+  question = state["question"]
+  documents = state["documents"]
+  
+  filtered_docs = []  
+  web_search = "No"
+  for d in documents:
+    doc_grader_prompt_formatted = doc_grader_prompt.format(
+      document=d.page_content, question=question
+    )
+    result = llm_json_mode.invoke(
+      [SystemMessage(content=doc_grader_instructions)]
+      + [HumanMessage(content=doc_grader_prompt_formatted)]
+    )
+    grade = json.loads(result.content)["binary_score"]
+    # Document relevant
+    if grade.lower() == "yes":
+      print("Document relevant")
+      filtered_docs.append(d)
+    # Document not relevant 
+    else:
+      print("Document not relevant")
+      web_search = "Yes"
+      continue
+    return {"documents": filtered_docs, "web_search": web_search}
