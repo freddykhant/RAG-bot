@@ -1,2 +1,4 @@
 /RAG
 .env
+.gitignore
+__pycache__
