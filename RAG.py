@@ -70,28 +70,28 @@ Use the vectorstore for questions on these topics. For all else, and especially 
 
 Return JSON with single key, datasource, that is 'websearch' or 'vectorstore' depending on the question."""
 
-# Test router
-test_web_search = llm_json_mode.invoke(
-    [SystemMessage(content=router_instructions)]
-    + [
-        HumanMessage(
-            content="Who is the UFC Pound-for-Pound Champion as of December 2024?"
-        )
-    ]
-)
-test_web_search_2 = llm_json_mode.invoke(
-    [SystemMessage(content=router_instructions)]
-    + [HumanMessage(content="What are the models released today for llama3.2?")]
-)
-test_vector_store = llm_json_mode.invoke(
-    [SystemMessage(content=router_instructions)]
-    + [HumanMessage(content="What are the types of agent memory?")]
-)
-print(
-    json.loads(test_web_search.content),
-    json.loads(test_web_search_2.content),
-    json.loads(test_vector_store.content),
-)
+# # Test router
+# test_web_search = llm_json_mode.invoke(
+#     [SystemMessage(content=router_instructions)]
+#     + [
+#         HumanMessage(
+#             content="Who is the UFC Pound-for-Pound Champion as of December 2024?"
+#         )
+#     ]
+# )
+# test_web_search_2 = llm_json_mode.invoke(
+#     [SystemMessage(content=router_instructions)]
+#     + [HumanMessage(content="What are the models released today for llama3.2?")]
+# )
+# test_vector_store = llm_json_mode.invoke(
+#     [SystemMessage(content=router_instructions)]
+#     + [HumanMessage(content="What are the types of agent memory?")]
+# )
+# print(
+#     json.loads(test_web_search.content),
+#     json.loads(test_web_search_2.content),
+#     json.loads(test_vector_store.content),
+# )
 
 ### Retrieval Grader
 
@@ -107,18 +107,18 @@ Please carefully and objectively assess whether the document contains at least s
 
 Return JSON with single key, binary_score, that is 'yes' or 'no' score to indicate whether the document contains at least some information that is relevant to the question."""
 
-# Test
-question = "What is Chain of thought prompting?"
-docs = retriever.invoke(question)
-doc_txt = docs[1].page_content
-doc_grader_prompt_formatted = doc_grader_prompt.format(
-    document=doc_txt, question=question
-)
-result = llm_json_mode.invoke(
-    [SystemMessage(content=doc_grader_instructions)]
-    + [HumanMessage(content=doc_grader_prompt_formatted)]
-)
-json.loads(result.content)
+# # Test
+# question = "What is Chain of thought prompting?"
+# docs = retriever.invoke(question)
+# doc_txt = docs[1].page_content
+# doc_grader_prompt_formatted = doc_grader_prompt.format(
+#     document=doc_txt, question=question
+# )
+# result = llm_json_mode.invoke(
+#     [SystemMessage(content=doc_grader_instructions)]
+#     + [HumanMessage(content=doc_grader_prompt_formatted)]
+# )
+# json.loads(result.content)
 
 ### Generate
 
@@ -147,12 +147,12 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
-# Test
-docs = retriever.invoke(question)
-docs_txt = format_docs(docs)
-rag_prompt_formatted = rag_prompt.format(context=docs_txt, question=question)
-generation = llm.invoke([HumanMessage(content=rag_prompt_formatted)])
-print(generation.content)
+# # Test
+# docs = retriever.invoke(question)
+# docs_txt = format_docs(docs)
+# rag_prompt_formatted = rag_prompt.format(context=docs_txt, question=question)
+# generation = llm.invoke([HumanMessage(content=rag_prompt_formatted)])
+# print(generation.content)
 
 ### Hallucination Grader
 
@@ -185,14 +185,14 @@ hallucination_grader_prompt = """FACTS: \n\n {documents} \n\n STUDENT ANSWER: {g
 Return JSON with two two keys, binary_score is 'yes' or 'no' score to indicate whether the STUDENT ANSWER is grounded in the FACTS. And a key, explanation, that contains an explanation of the score."""
 
 # Test using documents and generation from above
-hallucination_grader_prompt_formatted = hallucination_grader_prompt.format(
-    documents=docs_txt, generation=generation.content
-)
-result = llm_json_mode.invoke(
-   [SystemMessage(content=hallucination_grader_instructions)] 
-   + [HumanMessage(content=hallucination_grader_prompt_formatted)]
-)
-json.loads(result.content)
+# hallucination_grader_prompt_formatted = hallucination_grader_prompt.format(
+#     documents=docs_txt, generation=generation.content
+# )
+# result = llm_json_mode.invoke(
+#    [SystemMessage(content=hallucination_grader_instructions)] 
+#    + [HumanMessage(content=hallucination_grader_prompt_formatted)]
+# )
+# json.loads(result.content)
 
 ### Answer Grader
 
@@ -223,18 +223,18 @@ answer_grader_prompt = """QUESTION: \n\n {question} \n\n STUDENT ANSWER: {genera
 Return JSON with two two keys, binary_score is 'yes' or 'no' score to indicate whether the STUDENT ANSWER meets the criteria. And a key, explanation, that contains an explanation of the score."""
 
 # Test
-question = "What are the vision models released today as part of Llama 3.2?"
-answer = "The Llama 3.2 models released today include two vision models: Llama 3.2 11B Vision Instruct and Llama 3.2 90B Vision Instruct, which are available on Azure AI Model Catalog via managed compute. These models are part of Meta's first foray into multimodal AI and rival closed models like Anthropic's Claude 3 Haiku and OpenAI's GPT-4o mini in visual reasoning. They replace the older text-only Llama 3.1 models."
+# question = "What are the vision models released today as part of Llama 3.2?"
+# answer = "The Llama 3.2 models released today include two vision models: Llama 3.2 11B Vision Instruct and Llama 3.2 90B Vision Instruct, which are available on Azure AI Model Catalog via managed compute. These models are part of Meta's first foray into multimodal AI and rival closed models like Anthropic's Claude 3 Haiku and OpenAI's GPT-4o mini in visual reasoning. They replace the older text-only Llama 3.1 models."
 
-# Test using question and generation from above
-answer_grader_prompt_formatted = answer_grader_prompt.format(
-   question=question, generation=answer
-)
-result= llm_json_mode.invoke(
-   [SystemMessage(content=answer_grader_instructions)]
-   + [HumanMessage(content=answer_grader_prompt_formatted)]
-)
-json.loads(result.content)
+# # Test using question and generation from above
+# answer_grader_prompt_formatted = answer_grader_prompt.format(
+#    question=question, generation=answer
+# )
+# result= llm_json_mode.invoke(
+#    [SystemMessage(content=answer_grader_instructions)]
+#    + [HumanMessage(content=answer_grader_prompt_formatted)]
+# )
+# json.loads(result.content)
 
 
 ### Web Search Tool

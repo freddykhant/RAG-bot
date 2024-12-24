@@ -9,3 +9,4 @@ scikit-learn
 langgraph
 tavily-python
 beautifulsoup4
+langgraph
