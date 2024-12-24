@@ -17,7 +17,7 @@ the RAG agent uses llama 3.2 has 3 components:
 
 ## installation 🛠️
 
-To get started with the Adaptive Local RAG Agent, follow these steps:
+installation steps:
 
 1. **clone the repository**:
 
