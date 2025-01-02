@@ -38,7 +38,7 @@ vectorstore = SKLearnVectorStore.from_documents(
 
 # create retriever
 k = min(3, len(doc_splits)) # ensure k does not exceed available chunks
-retriver = vectorstore.as_retriever(k=k)
+retriever = vectorstore.as_retriever(k=k)
 
 
 router_instructions = """You are an expert at routing a user question to a vectorstore or general query.
@@ -47,7 +47,7 @@ The vectorstore contains spreadsheets related to the sales of 3 different busine
 
 Use the vectorstore for questions on these topics. For all else, use trained/general information.
 
-Return JSON with single key, datasource, that is 'generalinfo' or 'vectorstore' depending on the question."""
+Return JSON with ONLY single key, datasource, that is 'generalinfo' or 'vectorstore' depending on the question."""
 
 # test router
 test_general = llm_json_mode.invoke(
@@ -68,10 +68,31 @@ test_vector2 = llm_json_mode.invoke(
 
 print(
   json.loads(test_general.content),
-  "---------------------------------",
   json.loads(test_general2.content),
-  "---------------------------------",
   json.loads(test_vector.content),
-  "---------------------------------",
   json.loads(test_vector2.content)
 )
+
+### Retrieval Grader ###
+
+# doc grader instructions
+doc_grader_instructions = """ You are a grader assessing the relevance of a retrieved document to a user question.
+
+If the document contains keywords(s) or semantic meaning related to the question, grade it as relevant."""
+
+doc_grader_prompt = """ Here is the retrieved document. \n\n {document} \n\n Here is the user question: \n\n {question}.
+
+Please carefully and objectively assess whether the document contains at least some information that is relevant to the question.
+
+Return JSON with ONLY single key, binary_score, that is 'yes' or 'no' score to indicate whether the document contains at least some relevant information to the question."""
+
+# test retrieval grader
+question = "What is the total sales for Coffee Heaven?"
+docs = retriever.invoke(question)
+doc_txt = docs[1].page_content
+doc_grader_prompt_formatted = doc_grader_prompt.format(document=doc_txt, question=question)
+result = llm_json_mode.invoke(
+  [SystemMessage(content=doc_grader_instructions)]
+  + [HumanMessage(content=doc_grader_prompt_formatted)]
+)
+json.loads(result.content)
