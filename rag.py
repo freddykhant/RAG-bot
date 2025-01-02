@@ -37,3 +37,12 @@ vectorstore = SKLearnVectorStore.from_documents(
 # create retriever
 k = min(3, len(doc_splits)) # ensure k does not exceed available chunks
 retriver = vectorstore.as_retriever(k=k)
+
+
+router_instructions = """You are an expert at routing a user question to a vectorstore or general query.
+
+The vectorstore contains spreadsheets related to the sales of 3 different businesess.
+
+Use the vectorstore for questions on these topics. For all else, use trained information.
+
+Return JSON with single key, datasource, that is 'trainedinfo' or 'vectorstore' depending on the question."""
