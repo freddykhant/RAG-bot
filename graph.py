@@ -2,7 +2,7 @@ import operator
 from typing_extensions import TypedDict
 from typing import List, Annotated
 from langchain.schema import Document
-from RAG import retriever, format_docs, rag_prompt, llm, doc_grader_prompt, doc_grader_instructions, llm_json_mode, web_search_tool, router_instructions, hallucination_grader_prompt, hallucination_grader_instructions, answer_grader_prompt, answer_grader_instructions
+from rag import retriever, format_docs, rag_prompt, llm, doc_grader_prompt, doc_grader_instructions, llm_json_mode, router_instructions, hallucination_grader_prompt, hallucination_grader_instructions, answer_grader_prompt, answer_grader_instructions
 from langchain_core.messages import HumanMessage, SystemMessage
 import json
 
@@ -60,7 +60,7 @@ def grade_documents(state):
       query = "Yes"
       continue
     return {"documents": filtered_docs, "query": query}
-  
+
 ### Edges ###
 
 def route_question(state):
@@ -77,16 +77,16 @@ def route_question(state):
     print("\nROUTE QUESTION TO RAG\n")
     return "vectorstore"
   
-def decide_to_generate(state):
-  print("\nASSESS GRADED DOCUMENTS\N")
-  query = state["query"]  
+# def decide_to_generate(state):
+#   print("\nASSESS GRADED DOCUMENTS\N")
+#   query = state["query"]  
 
-  if query == "Yes":
-    print("\n Not all documents are relevant to the question, include general query")
-    return "geneeral_query"
-  else:
-    print("\nDecision: Generate\n")
-    return "generate"
+#   if query == "Yes":
+#     print("\n Not all documents are relevant to the question, include general query")
+#     return "general_query"
+#   else:
+#     print("\nDecision: Generate\n")
+#     return "generate"
   
 def grade_generation(state):
   print("CHECK HALLUCINATIONS")
