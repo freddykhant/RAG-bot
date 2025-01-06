@@ -77,17 +77,6 @@ def route_question(state):
     print("\nROUTE QUESTION TO RAG\n")
     return "vectorstore"
   
-# def decide_to_generate(state):
-#   print("\nASSESS GRADED DOCUMENTS\N")
-#   query = state["query"]  
-
-#   if query == "Yes":
-#     print("\n Not all documents are relevant to the question, include general query")
-#     return "general_query"
-#   else:
-#     print("\nDecision: Generate\n")
-#     return "generate"
-  
 def grade_generation(state):
   print("CHECK HALLUCINATIONS")
   question = state["question"]

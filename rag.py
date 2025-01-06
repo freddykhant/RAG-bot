@@ -26,7 +26,7 @@ for file in files:
 
 # split documents
 text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-  chunk_size=1000, chunk_overlap=200
+  chunk_size=3000, chunk_overlap=500
 )
 doc_splits = text_splitter.split_documents(docs)
 
@@ -37,7 +37,7 @@ vectorstore = SKLearnVectorStore.from_documents(
 )
 
 # create retriever
-k = min(3, len(doc_splits)) # ensure k does not exceed available chunks
+k = min(30, len(doc_splits)) # ensure k does not exceed available chunks
 retriever = vectorstore.as_retriever(k=k)
 
 
@@ -65,21 +65,18 @@ Return JSON with ONLY single key - binary_score, that is either 'yes' or 'no' sc
 ### answer generator ###
 
 # prompt
-rag_prompt = """You are an assistant for question-answering tasks. 
+rag_prompt = """You are an assistant and expert on data analysis. 
 
-Here is the context to use to answer the question:
+Here is the sales data:
 
 {context} 
 
-Think carefully about the above context. 
-
-Now, review the user question:
+Question:
 
 {question}
 
-Provide an answer to these questions using only the above context. 
-
-Use three sentences maximum and keep the answer concise.
+Answer the question above based on the data provided.
+Do not skip or merge unrelated rows. 
 
 Answer:"""
 
@@ -150,3 +147,12 @@ Output format:
   - "explanation": A string explaining your reasoning.
 - Do not return any extra text outside the JSON.
 """
+
+# test generation
+#question = "What is the total amount of sales for Green Grocers for 2024-12-24" 
+question = "What is the total quantity of items sold by Coffee Heaven for 2024-12-24"
+documents = retriever.invoke(question)
+docs_txt = format_docs(documents)
+rag_prompt_formatted = rag_prompt.format(context=docs_txt, question=question)
+generation = llm.invoke([HumanMessage(content=rag_prompt_formatted)])
+print(generation.content)
