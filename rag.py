@@ -49,30 +49,6 @@ Use the vectorstore for questions on these topics. For all else, use trained/gen
 
 Return JSON with ONLY single key, datasource, that is 'generalinfo' or 'vectorstore' depending on the question."""
 
-# test router
-# test_general = llm_json_mode.invoke(
-#   [SystemMessage(content=router_instructions)]
-#   + [HumanMessage(content="What is the capital of France?")])
-
-# test_general2 = llm_json_mode.invoke(
-#   [SystemMessage(content=router_instructions)]
-#   + [HumanMessage(content="What is the capital of Australia?")])
-
-# test_vector = llm_json_mode.invoke(
-#   [SystemMessage(content=router_instructions)]
-#   + [HumanMessage(content="What is the total sales for Coffee Heaven?")])
-
-# test_vector2 = llm_json_mode.invoke(
-#   [SystemMessage(content=router_instructions)]
-#   + [HumanMessage(content="What is the total sales for Tech Emporium?")])
-
-# print(
-#   json.loads(test_general.content),
-#   json.loads(test_general2.content),
-#   json.loads(test_vector.content),
-#   json.loads(test_vector2.content)
-# )
-
 ### Retrieval Grader ###
 
 # doc grader instructions
@@ -85,20 +61,6 @@ doc_grader_prompt = """ Here is the retrieved document. \n\n {document} \n\n Her
 Please carefully and objectively assess whether the document contains at least some information that is relevant to the question.
 
 Return JSON with ONLY single key - binary_score, that is either 'yes' or 'no' score to indicate whether the document contains at least some relevant information to the question."""
-
-# test retrieval grader
-# question = "What is the total sales for Coffee Heaven?"
-# docs = retriever.invoke(question)
-# doc_txt = docs[1].page_content
-# doc_grader_prompt_formatted = doc_grader_prompt.format(
-#     document=doc_txt, question=question
-# )
-# result = llm_json_mode.invoke(
-#     [SystemMessage(content=doc_grader_instructions)]
-#     + [HumanMessage(content=doc_grader_prompt_formatted)]
-# )
-# json.loads(result.content)
-# print(result.content)
 
 ### answer generator ###
 
@@ -124,15 +86,6 @@ Answer:"""
 # post processing
 def format_docs(docs):
   return "\n\n".join([doc.page_content for doc in docs])
-
-# test generation
-question = "What are the TOTAL sales for Coffee Heaven for 2024-12-24?"
-docs = retriever.invoke(question)
-docs_txt = format_docs(docs)
-rag_prompt_formatted = rag_prompt.format(context=docs_txt, question=question)
-generation = llm.invoke([HumanMessage(content=rag_prompt_formatted)])
-print("\n")
-print(generation.content)
 
 ### hallucination grader ###
 
@@ -166,15 +119,6 @@ Return JSON with ONLY two keys, binary_score is 'yes' or 'no' score to indicate 
 
 # test hallucination grader
 
-# hallucination_grader_prompt_formatted = hallucination_grader_prompt.format(
-#     documents=docs_txt, generation=generation.content
-# )
-# result = llm_json_mode.invoke(
-#    [SystemMessage(content=hallucination_grader_instructions)] 
-#    + [HumanMessage(content=hallucination_grader_prompt_formatted)]
-# )
-# json.loads(result.content)
-
 ### answer grader ###
 
 answer_grader_instructions = """You are a teacher grading a quiz. 
@@ -204,20 +148,5 @@ Output format:
 - Return a JSON object, with two keys:
   - "binary_score": "yes" or "no"
   - "explanation": A string explaining your reasoning.
-- Do not return any extra text outside the JSON."""
-
-# test answer grader
-# question = "What is the total sales for Coffee Heaven?"
-# answer = "The total sales for Coffee Heaven is $8367.77"
-
-# # test using question and generation from above
-# answer_grader_prompt_formatted = answer_grader_prompt.format(
-#   question=question, generation=answer
-# )
-
-# result = llm_json_mode.invoke(
-#   [SystemMessage(content=answer_grader_instructions)]
-#   + [HumanMessage(content=answer_grader_prompt_formatted)]
-# )
-
-# json.loads(result.content)
+- Do not return any extra text outside the JSON.
+"""
