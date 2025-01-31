@@ -12,7 +12,7 @@ the adaptive local RAG agent uses LLaMA3.2 to enhance the generation of response
 the RAG agent uses llama 3.2 has 3 components:
 
 - **Routing**: Adaptive RAG to route questions to different retrieval approaches
-- **Fallback**: Corrective RAG to fallback to web search if docs are not relevant to the query
+- **Fallback**: Corrective RAG to fallback to general knowledge if docs are not relevant to the query
 - **Self Correction**: Self-RAG to fix irrelevant answers or ones with hallucinations
 
 ## installation 🛠️
